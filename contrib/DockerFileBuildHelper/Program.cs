@@ -273,6 +273,8 @@ namespace DockerFileBuildHelper
                     break;
                 case "lightning-charge":
                     dockerInfo.DockerFilePath = $"Dockerfile";
+                    dockerInfo.DockerFilePathARM32v7 = "arm32v7.Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = "arm64v8.Dockerfile";
                     dockerInfo.GitLink = "https://github.com/ElementsProject/lightning-charge";
                     dockerInfo.GitRef = $"v{image.Tag.Replace("-standalone", "")}";
                     dockerInfo.SupportedByUs = true;
@@ -296,6 +298,16 @@ namespace DockerFileBuildHelper
                     dockerInfo.DockerFilePath = $"Dockerfile";
                     dockerInfo.GitLink = "https://github.com/JeffVandrewJr/patron";
                     dockerInfo.GitRef = $"v{image.Tag}";
+                    break;
+                case "electrumx":
+                    dockerInfo.DockerFilePath = $"Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/lukechilds/docker-electrumx";
+                    dockerInfo.GitRef = $"master";
+                    break;
+                case "eclair":
+                    dockerInfo.DockerFilePath = $"Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/ACINQ/eclair";
+                    dockerInfo.GitRef = $"{image.Tag}";
                     break;
                 case "isso":
                     dockerInfo.DockerFilePath = $"Dockerfile";
@@ -331,9 +343,10 @@ namespace DockerFileBuildHelper
                     dockerInfo.GitRef = $"x86_64";
                     break;
                 case "bitcoin":
-                    dockerInfo.DockerFilePath = $"Bitcoin/{image.Tag}/linuxamd64.Dockerfile";
-                    dockerInfo.DockerFilePathARM32v7 = $"Bitcoin/{image.Tag}/linuxarm32v7.Dockerfile";
-                    dockerInfo.DockerFilePathARM64v8 = $"Bitcoin/{image.Tag}/linuxarm64v8.Dockerfile";
+                    var tagNoRevision = image.Tag.Split('-').First();
+                    dockerInfo.DockerFilePath = $"Bitcoin/{tagNoRevision}/linuxamd64.Dockerfile";
+                    dockerInfo.DockerFilePathARM32v7 = $"Bitcoin/{tagNoRevision}/linuxarm32v7.Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = $"Bitcoin/{tagNoRevision}/linuxarm64v8.Dockerfile";
                     dockerInfo.GitLink = "https://github.com/btcpayserver/dockerfile-deps";
                     dockerInfo.GitRef = $"Bitcoin/{image.Tag}";
                     dockerInfo.SupportedByUs = true;
