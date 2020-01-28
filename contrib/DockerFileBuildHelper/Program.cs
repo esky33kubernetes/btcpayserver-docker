@@ -337,12 +337,19 @@ namespace DockerFileBuildHelper
                     dockerInfo.GitRef = $"basedon-{image.Tag}";
                     dockerInfo.SupportedByUs = true;
                     break;
+                case "groestlcoin/lnd":
+                    dockerInfo.DockerFilePath = "Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/Groestlcoin/lnd";
+                    dockerInfo.GitRef = $"{image.Tag}";
+                    dockerInfo.SupportedByUs = false;
+                    break;
                 case "monero":
                     dockerInfo.DockerFilePath = "Dockerfile";
                     dockerInfo.GitLink = "https://github.com/Kukks/monero-docker";
                     dockerInfo.GitRef = $"x86_64";
                     break;
                 case "bitcoin":
+                {
                     var tagNoRevision = image.Tag.Split('-').First();
                     dockerInfo.DockerFilePath = $"Bitcoin/{tagNoRevision}/linuxamd64.Dockerfile";
                     dockerInfo.DockerFilePathARM32v7 = $"Bitcoin/{tagNoRevision}/linuxarm32v7.Dockerfile";
@@ -351,6 +358,17 @@ namespace DockerFileBuildHelper
                     dockerInfo.GitRef = $"Bitcoin/{image.Tag}";
                     dockerInfo.SupportedByUs = true;
                     break;
+                }
+                case "elements":
+                {
+                    var tagNoRevision = image.Tag.Split('-').First();
+                    dockerInfo.DockerFilePath = $"Elements/{tagNoRevision}/linuxamd64.Dockerfile";
+                    dockerInfo.DockerFilePathARM32v7 = $"Elements/{tagNoRevision}/linuxarm32v7.Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = $"Elements/{tagNoRevision}/linuxarm64v8.Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/btcpayserver/dockerfile-deps";
+                    dockerInfo.GitRef = $"Elements/{image.Tag}";
+                    break;
+                }
                 case "tor":
                     dockerInfo.DockerFilePath = $"Tor/{image.Tag}/linuxamd64.Dockerfile";
                     dockerInfo.DockerFilePathARM32v7 = $"Tor/{image.Tag}/linuxarm32v7.Dockerfile";
@@ -369,6 +387,7 @@ namespace DockerFileBuildHelper
                 case "btcpayserver":
                     dockerInfo.DockerFilePath = "amd64.Dockerfile";
                     dockerInfo.DockerFilePathARM32v7 = "arm32v7.Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = "arm64v8.Dockerfile";
                     dockerInfo.GitLink = "https://github.com/btcpayserver/btcpayserver";
                     dockerInfo.GitRef = $"v{image.Tag}";
                     dockerInfo.SupportedByUs = true;
@@ -484,6 +503,22 @@ namespace DockerFileBuildHelper
                     dockerInfo.DockerFilePathARM32v7 = $"arm32v7.Dockerfile";
                     dockerInfo.DockerFilePathARM64v8 = $"arm64v8.Dockerfile";
                     dockerInfo.GitLink = "https://github.com/shesek/spark-wallet";
+                    dockerInfo.GitRef = $"v{image.Tag.Split('-')[0]}";
+                    dockerInfo.SupportedByUs = true;
+                    break;
+                case "c-lightning-rest":
+                    dockerInfo.DockerFilePath = $"amd64.Dockerfile";
+                    dockerInfo.DockerFilePathARM32v7 = $"arm32v7.Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = $"arm64v8.Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/Ride-The-Lightning/c-lightning-REST";
+                    dockerInfo.GitRef = $"v{image.Tag.Split('-')[0]}";
+                    dockerInfo.SupportedByUs = true;
+                    break;
+                case "btcpayserver-configurator":
+                    dockerInfo.DockerFilePath = $"Dockerfiles/amd64.Dockerfile";
+                    dockerInfo.DockerFilePathARM32v7 = $"Dockerfiles/arm32v7.Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = $"Dockerfiles/arm64v8.Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/btcpayserver/btcpayserver-configurator";
                     dockerInfo.GitRef = $"v{image.Tag.Split('-')[0]}";
                     dockerInfo.SupportedByUs = true;
                     break;

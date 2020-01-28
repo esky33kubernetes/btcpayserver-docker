@@ -34,9 +34,9 @@
 		proxy_pass http://lnd_bitcoin:8080/;
 	}
 		{{ end }}
-		{{ if (eq $serviceName "lnd_bitcoin_rtl") }}
+		{{ if (eq $serviceName "bitcoin_rtl") }}
 	location /rtl/ {
-		proxy_pass http://lnd_bitcoin_rtl:3000/rtl/;
+		proxy_pass http://bitcoin_rtl:3000/rtl/;
 	}
 		{{ end }}
 		{{ if (eq $serviceName "btcqbo") }}
@@ -56,6 +56,12 @@
 		{{ if (eq $serviceName "clightning_bitcoin_charge") }}
 	location /lightning-charge/btc/ {
 		proxy_pass http://clightning_bitcoin_charge:9112/;
+	}
+	{{ end }}		
+	{{ if (eq $serviceName "clightning_bitcoin_rest") }}
+	location /clightning-rest/btc/ {
+	    rewrite ^/clightning-rest/btc/(.*) /$1 break;
+		proxy_pass http://clightning_bitcoin_rest:3001/;
 	}
 		{{ end }}
 		{{ if (eq $serviceName "clightning_groestlcoin_spark") }}
@@ -80,6 +86,20 @@
         proxy_set_header        X-Forwarded-Port   443;
         proxy_set_header        X-Forwarded-Proto  https;
 		proxy_pass http://btctransmuter;
+	}
+		{{ end }}
+		
+		{{ if (eq $serviceName "configurator") }}
+	location /configurator/ {
+		proxy_set_header Connection "";
+		proxy_set_header        Host               $host;
+        proxy_set_header        X-Real-IP          $remote_addr;
+        proxy_set_header        X-Forwarded-For    $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Host   $host:443;
+        proxy_set_header        X-Forwarded-Server $host;
+        proxy_set_header        X-Forwarded-Port   443;
+        proxy_set_header        X-Forwarded-Proto  https;
+		proxy_pass http://configurator;
 	}
 		{{ end }}
 	{{ end }}
