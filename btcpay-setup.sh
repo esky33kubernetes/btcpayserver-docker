@@ -200,6 +200,7 @@ fi
 : "${REVERSEPROXY_HTTP_PORT:=80}"
 : "${REVERSEPROXY_HTTPS_PORT:=443}"
 : "${BTCPAY_ENABLE_SSH:=false}"
+: "${PIHOLE_SERVERIP:=}"
 
 OLD_BTCPAY_DOCKER_COMPOSE="$BTCPAY_DOCKER_COMPOSE"
 ORIGINAL_DIRECTORY="$(pwd)"
@@ -305,6 +306,7 @@ BTCPAY_IMAGE:$BTCPAY_IMAGE
 ACME_CA_URI:$ACME_CA_URI
 TOR_RELAY_NICKNAME: $TOR_RELAY_NICKNAME
 TOR_RELAY_EMAIL: $TOR_RELAY_EMAIL
+PIHOLE_SERVERIP: $PIHOLE_SERVERIP
 ----------------------
 Additional exported variables:
 BTCPAY_DOCKER_COMPOSE=$BTCPAY_DOCKER_COMPOSE
@@ -355,6 +357,7 @@ export BTCPAY_BASE_DIRECTORY=\"$BTCPAY_BASE_DIRECTORY\"
 export BTCPAY_ENV_FILE=\"$BTCPAY_ENV_FILE\"
 export BTCPAY_HOST_SSHKEYFILE=\"$BTCPAY_HOST_SSHKEYFILE\"
 export BTCPAY_ENABLE_SSH=$BTCPAY_ENABLE_SSH
+export PIHOLE_SERVERIP=\"$PIHOLE_SERVERIP\"
 if cat \"\$BTCPAY_ENV_FILE\" &> /dev/null; then
   while IFS= read -r line; do
     ! [[ \"\$line\" == \"#\"* ]] && [[ \"\$line\" == *\"=\"* ]] && export \"\$line\"
@@ -384,7 +387,7 @@ if ! [[ -x "$(command -v docker)" ]] || ! [[ -x "$(command -v docker-compose)" ]
             2>error
     fi
     if ! [[ -x "$(command -v docker)" ]]; then
-        if [[ "$(uname -m)" == "x86_64" ]] || [[ "$(uname -m)" == "armv7l" ]]; then
+        if [[ "$(uname -m)" == "x86_64" ]] || [[ "$(uname -m)" == "armv7l" ]] || [[ "$(uname -m)" == "aarch64" ]]; then
             if [[ "$OSTYPE" == "darwin"* ]]; then
                 # Mac OS	
                 if ! [[ -x "$(command -v brew)" ]]; then
@@ -408,20 +411,9 @@ if ! [[ -x "$(command -v docker)" ]] || ! [[ -x "$(command -v docker-compose)" ]
                 sh get-docker.sh
                 rm get-docker.sh
             fi
-        elif [[ "$(uname -m)" == "aarch64" ]]; then
-            echo "Trying to install docker for armv7 on a aarch64 board..."
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-            RELEASE=$(lsb_release -cs)
-            if [[ "$RELEASE" == "bionic" ]]; then
-                RELEASE=xenial
-            fi
-            if [[ -x "$(command -v dpkg)" ]]; then
-                dpkg --add-architecture armhf
-            fi
-            add-apt-repository "deb https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $RELEASE stable"
-            apt-get update -y
-            # zlib1g:armhf is needed for docker-compose, but we install it here as we changed dpkg here
-            apt-get install -y docker-ce:armhf zlib1g:armhf
+        else
+            echo "Unsupported architecture $(uname -m)"
+            return
         fi
     fi
 

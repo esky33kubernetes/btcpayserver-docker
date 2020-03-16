@@ -18,6 +18,7 @@ install_tooling() {
                 "btcpayserver_trezarcoind" "trezarcoin-cli.sh" "Command line for your Trezar instance" \
                 "btcpayserver_viacoind" "viacoin-cli.sh" "Command line for your Viacoin instance" \
                 "btcpayserver_elementsd" "elements-cli.sh" "Command line for your Elements/Liquid instance" \
+                "pihole" "pihole.sh" "Command line for running pihole commands" \
                 "*" "btcpay-clean.sh" "Command line for deleting old unused docker images" \
                 "*" "btcpay-down.sh" "Command line for stopping all services related to BTCPay Server" \
                 "*" "btcpay-restart.sh" "Command line for restarting all services related to BTCPay Server" \
@@ -100,7 +101,8 @@ BTCTRANSMUTER_HOST=$BTCTRANSMUTER_HOST
 BTCPAY_CRYPTOS=$BTCPAY_CRYPTOS
 WOOCOMMERCE_HOST=$WOOCOMMERCE_HOST
 TOR_RELAY_NICKNAME=$TOR_RELAY_NICKNAME
-TOR_RELAY_EMAIL=$TOR_RELAY_EMAIL" > $BTCPAY_ENV_FILE
+TOR_RELAY_EMAIL=$TOR_RELAY_EMAIL
+EPS_XPUB=$EPS_XPUB" > $BTCPAY_ENV_FILE
 }
 
 btcpay_up() {
