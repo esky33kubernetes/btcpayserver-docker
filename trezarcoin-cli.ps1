@@ -1,1 +1,1 @@
-docker exec btcpayserver_trezarcoind trezarcoin-cli -datadir="/data" $args
+docker exec -ti btcpayserver_trezarcoind trezarcoin-cli -datadir="/data" $args

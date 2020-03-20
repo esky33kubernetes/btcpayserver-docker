@@ -232,22 +232,6 @@ namespace DockerFileBuildHelper
         retry:
             switch (name)
             {
-                case "pihole":
-                    dockerInfo.GitLink = "https://github.com/pi-hole/docker-pi-hole";
-                    dockerInfo.DockerFilePath = $"Dockerfile_amd64";
-                    dockerInfo.DockerFilePathARM32v7 = $"Dockerfile_armhf";
-                    dockerInfo.DockerFilePathARM64v8 = $"Dockerfile_arm64";
-                    dockerInfo.GitRef = $"{image.Tag}";
-                    dockerInfo.SupportedByUs = true;
-                    break;
-                case "eps":
-                    dockerInfo.DockerFilePath = $"EPS/{NoRevision(image.Tag)}/linuxamd64.Dockerfile";
-                    dockerInfo.DockerFilePathARM32v7 = $"EPS/{NoRevision(image.Tag)}/linuxarm32v7.Dockerfile";
-                    dockerInfo.DockerFilePathARM64v8 = $"EPS/{NoRevision(image.Tag)}/linuxarm64v8.Dockerfile";
-                    dockerInfo.GitLink = "https://github.com/btcpayserver/dockerfile-deps";
-                    dockerInfo.GitRef = $"EPS/{image.Tag}";
-                    dockerInfo.SupportedByUs = true;
-                    break;
                 case "btglnd":
                     dockerInfo.DockerFilePath = "Dockerfile";
                     dockerInfo.GitLink = "https://github.com/vutov/lnd";
@@ -323,11 +307,6 @@ namespace DockerFileBuildHelper
                 case "eclair":
                     dockerInfo.DockerFilePath = $"Dockerfile";
                     dockerInfo.GitLink = "https://github.com/ACINQ/eclair";
-                    dockerInfo.GitRef = $"{image.Tag}";
-                    break;
-                case "groestlcoin/eclair":
-                    dockerInfo.DockerFilePath = $"Dockerfile";
-                    dockerInfo.GitLink = "https://github.com/Groestlcoin/eclair";
                     dockerInfo.GitRef = $"{image.Tag}";
                     break;
                 case "isso":
@@ -430,9 +409,8 @@ namespace DockerFileBuildHelper
                     dockerInfo.SupportedByUs = true;
                     break;
                 case "btctransmuter":
-                    dockerInfo.DockerFilePath = "Dockerfiles/amd64.Dockerfile";
-                    dockerInfo.DockerFilePathARM32v7 = "Dockerfiles/arm32v7.Dockerfile";
-                    dockerInfo.DockerFilePathARM64v8 = "Dockerfiles/arm64v8.Dockerfile";
+                    dockerInfo.DockerFilePath = "BtcTransmuter/Dockerfile.linuxamd64";
+                    dockerInfo.DockerFilePathARM32v7 = "BtcTransmuter/Dockerfile.linuxarm32v7";
                     dockerInfo.GitLink = "https://github.com/btcpayserver/btctransmuter";
                     dockerInfo.GitRef = $"v{image.Tag}";
                     dockerInfo.SupportedByUs = true;

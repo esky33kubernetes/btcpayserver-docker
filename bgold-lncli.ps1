@@ -1,1 +1,1 @@
-docker exec btcpayserver_lnd_bitcoingold lncli $args
+docker exec -ti btcpayserver_lnd_bitcoingold lncli $args

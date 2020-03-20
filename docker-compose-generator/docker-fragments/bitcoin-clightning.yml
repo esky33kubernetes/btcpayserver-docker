@@ -24,9 +24,8 @@ services:
     links:
       - bitcoind
   clightning_bitcoin_charge:
-    image: shesek/lightning-charge:0.4.16-standalone
+    image: shesek/lightning-charge:0.4.11-standalone
     restart: unless-stopped
-    stop_signal: SIGKILL
     environment:
       NETWORK: ${NBITCOIN_NETWORK:-regtest}
       COOKIE_FILE: /data/.cookie
@@ -54,7 +53,7 @@ services:
      - "9737"
 
   clightning_bitcoin_rest:
-    image: saubyk/c-lightning-rest:0.2.2
+    image: saubyk/c-lightning-rest:0.2.1
     restart: unless-stopped
     environment:
       PROTOCOL: "http"
@@ -69,14 +68,13 @@ services:
       - "3001"
 
   bitcoin_rtl:
-    image: shahanafarooqui/rtl:0.6.8
+    image: shahanafarooqui/rtl:0.6.3
     restart: unless-stopped
     environment:
       LN_IMPLEMENTATION: CLT
-      CONFIG_PATH: /root/.lightning/config
       LN_SERVER_URL: http://clightning_bitcoin_rest:3001/v1
       MACAROON_PATH: /etc/clightning_bitcoin_rest/certs
-      RTL_CONFIG_PATH: /data/
+      RTL_CONFIG_PATH: /data/RTL.conf
       BITCOIND_CONFIG_PATH: /etc/bitcoin/bitcoin.conf
       RTL_SSO: 1
       RTL_COOKIE_PATH: /data/.cookie
