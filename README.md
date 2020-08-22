@@ -1,16 +1,16 @@
-[![CircleCI](https://circleci.com/gh/btcpayserver/btcpayserver-docker.svg?style=svg)](https://circleci.com/gh/btcpayserver/btcpayserver-docker)
+[![CircleCI](https://circleci.com/gh/btcpayserver/btcpayserver-docker.svg?style=svg)](https://app.circleci.com/pipelines/github/btcpayserver/btcpayserver-docker)
 
-#### Start accepting Bitcoin today with BTCPayServer! This guide will walk you through the installation.
+#### Start accepting Bitcoin today with BTCPay Server! This guide will walk you through the installation.
 
 # Introduction
 
-While [our instructions](https://docs.btcpayserver.org/deployment/lunanodewebdeployment) cover how to install BTCPayServer in one click on Azure or Lunanode, BTCPay Server is not limited to those options.
+While [our instructions](https://docs.btcpayserver.org/LunaNodeWebDeployment/) cover how to install BTCPayServer in one click on Azure or Lunanode, BTCPay Server is not limited to those options.
 
 You will find below information about how you can install BTCPay Server easily in any environment having docker available.
 
 # Architecture
 
-![Architecture](https://github.com/btcpayserver/btcpayserver-doc/raw/master/img/Architecture.png)
+![Architecture](https://github.com/btcpayserver/btcpayserver-doc/raw/master/docs/img/Architecture.png)
 
 As you can see, BTCPay depends on several pieces of infrastructure, mainly:
 
@@ -32,19 +32,21 @@ Take a look at how BTCPay works in a video below.
 
 Here is a presentation of the global architecture at Advancing Bitcoin conference.
 
-[![BTCPay - Architecture overview](https://i.vimeocdn.com/video/758684368_520x252.jpg)](https://vimeo.com/316630434 "BTCPay - Architecture overview")
+[![BTCPay - Architecture overview](https://i3.ytimg.com/vi/Up0dvorzSNM/maxresdefault.jpg)](https://www.youtube.com/watch?v=Up0dvorzSNM "BTCPay - Architecture overview")
 
 # Full installation (for technical users)
 
-You can also install BTCPayServer on your own machine or VPS instance.
+You can also install BTCPay Server on your own machine or VPS instance.
 
 The officially supported setup is driven by Docker (and Docker-Compose).
 
-First, make sure you have a domain name pointing to your host (CNAME), with ports `443` and `80` externally accessible (and perhaps additional ports like `9735` and `9736` for Bitcoin and Litecoin lightning). Otherwise, you will have to set it manually by running `changedomain.sh`.
+First, make sure you have a domain name pointing to your host `A record`, with ports `443` and `80` externally accessible. For Lightning Network, port `9735` is required (`9736` if you use Litecoin Lightning). Otherwise, you will have to set a domain manually by running `changedomain.sh`.
 
-Let's assume it is `btcpay.EXAMPLE.com`.
+Let's assume your domain is `btcpay.EXAMPLE.com`.
 
-If you want to support Litecoin, Bitcoin, and C-Lightning, and want HTTPS automatically configured by Nginx:
+The setup below assumes you want to support Bitcoin, c-lightning, HTTPS automatically configured by Nginx. It also enables node pruning, which you can [modify](#generated-docker-compose) or ignore if you have enough disk space for a full node. Finally, your domain is `btcpay.EXAMPLE.com` should reflect your actual domain name.
+
+[Environment variables](#environment-variables) can be tailored to your needs. Some variables require additional storage space.
 
 ```bash
 # Login as root
@@ -62,7 +64,7 @@ cd btcpayserver-docker
 export BTCPAY_HOST="btcpay.EXAMPLE.com"
 export NBITCOIN_NETWORK="mainnet"
 export BTCPAYGEN_CRYPTO1="btc"
-export BTCPAYGEN_CRYPTO2="ltc"
+export BTCPAYGEN_ADDITIONAL_FRAGMENTS="opt-save-storage-s"
 export BTCPAYGEN_REVERSEPROXY="nginx"
 export BTCPAYGEN_LIGHTNING="clightning"
 export BTCPAY_ENABLE_SSH=true
@@ -126,17 +128,18 @@ A wide variety of useful scripts are available once BTCPay is installed:
 
 * `bitcoin-cli.sh`: Access your Bitcoin node instance (for RPC)
 * `bitcoin-lightning-cli.sh`: Access your C-Lightning node instance (for RPC)
-* `changedomain.sh`: Change the domain of your BTCPayServer
+* `changedomain.sh`: Change the domain of your BTCPayServer (remember to disable 2FA/U2F first, as you risk being unable to log in to your account)
 * `btcpay-update.sh`: Update BTCPayServer to the latest version
 * `btcpay-up.sh`: Run `docker-compose up`
 * `btcpay-down.sh`: Run `docker-compose down`
 * `btcpay-setup.sh`: Change the settings of your server
 * `. ./btcpay-setup.sh`: Information about additional parameters
 * `. ./btcpay-setup.sh -i`: Set up your BTCPayServer
+* `btcpay-restart.sh`: Restart your BTCPayServer
 
 # Under the hood
 
-## Generated docker-compose <a id="generated-docker-compose"></a>
+## Generated docker-compose
 
 When you run `btcpay-setup.sh`, your environment variables are used by [build.sh](build.sh) (or [build.ps1](build.ps1)) to generate a docker-compose adapted for your needs. For the full list of options, see: [Environment variables](#environment-variables)
 
@@ -157,13 +160,19 @@ Available `BTCPAYGEN_ADDITIONAL_FRAGMENTS` currently are:
 * [opt-add-tor](docker-compose-generator/docker-fragments/opt-add-tor.yml), for exposing BTCPayServer, Woocommerce, your lightning nodes as hidden services and accept onion peers for your full node. Warning: This options is for working around NAT and firewall problems as well as to help protect your customer's privacy. This will not protect your privacy against a targeted attack against you.
 * [opt-add-btctransmuter](docker-compose-generator/docker-fragments/opt-add-btctransmuter.yml), for a self-hosted IFTTT style service for crypto services such as fiat settlement.
 * [opt-txindex](docker-compose-generator/docker-fragments/opt-txindex.yml), to enable txindex=1 in bitcoin.conf if you require txindexing for Bisq, DOJO, Esplora, etc.
-* [opt-unsafe-expose](docker-compose-generator/docker-fragments/opt-unsafe-expose.yml), to unsafely expose bitcoind P2P port 8333 if you require P2P for Bisq, DOJO, Esplora, etc. WARNING: ONLY USE ON TRUSTED LAN OR WITH FIREWALL RULES WHITELISTING SPECIFIC HOSTS
+* [opt-unsafe-expose](docker-compose-generator/docker-fragments/opt-expose-unsafe.yml), to unsafely expose bitcoind P2P port 8333 if you require P2P for Bisq, DOJO, Esplora, etc. WARNING: ONLY USE ON TRUSTED LAN OR WITH FIREWALL RULES WHITELISTING SPECIFIC HOSTS
 * [opt-add-tor-relay](docker-compose-generator/docker-fragments/opt-add-tor-relay.yml), for a non-exit tor relay. Make sure to have ports 9001 and 9030 accessible externally. [Please read the legal implications of running a tor relay](https://www.eff.org/torchallenge/faq.html) and [what resources are used to operate the relay](https://trac.torproject.org/projects/tor/wiki/TorRelayGuide#RelayRequirements).
-* [opt-add-electrumx](docker-compose-generator/docker-fragments/opt-add-electrumx.yml), to integrate a full ElectrumX server (from official source) with BTCPay, using the BTCPay server's full bitcoin node for complete privacy when using your own Electrum wallet.  You can also open port 50002 up to the internet on your router etc, to be part of the ElectrumX network, helping other Electrum wallet users to get connected. The bitcoin option -txindex is mandatory for ElectrumX, and this fragement will enable it on your BTCPay server automatically - NO need to use the fragment opt-txindex.yml.
+* [opt-add-electrumx](docker-compose-generator/docker-fragments/opt-add-electrumx.yml), to integrate a full ElectrumX server (from official source) with BTCPay, using the BTCPay server's full bitcoin node for complete privacy when using your own Electrum wallet.  You can also open port 50002 up to the internet on your router etc, to be part of the ElectrumX network, helping other Electrum wallet users to get connected. The bitcoin option `-txindex` is mandatory for ElectrumX, and this fragment will enable it on your BTCPay server automatically - NO need to use the fragment opt-txindex.yml.
+* [opt-add-electrum-ps](docker-compose-generator/docker-fragments/opt-add-electrum-ps.yml), to integrate Electrum Personal Server (EPS) with BTCPay (EPS is a  single-user alternative to the ElectrumX Server option above).  EPS will also use the BTCPay server's full bitcoin node for complete privacy when using your own Electrum wallet, for your own personal use (i.e. other users cannot use your server to verify transactions).  Also, the bitcoin option `-txindex` is NOT mandatory for EPS, and it will run on a pruned node (unlike ElectrumX).  You will need to add your XPUB/YPUB/ZPUB as environment variable `EPS_XPUB` before enabling EPS for the first time (see above section on environment variables, and see [full documentation](https://docs.btcpayserver.org/ElectrumPersonalServer/) for details).
+* [opt-add-configurator](docker-compose-generator/docker-fragments/opt-add-configurator.yml), to integrate the [BTCPay Server Configurator](https://install.btcpayserver.org) to manage your BTCPay deployment through a UI, and to allow new deployments elsewhere easily.
+* [opt-add-pihole](docker-compose-generator/docker-fragments/opt-add-pihole.yml) ([See the documentation](docs/pihole.md))
+* [opt-add-thunderhub](docker-compose-generator/docker-fragments/opt-add-thunderhub.yml) for a LND Lightning Node Manager in your Browser. Maintained by [apotdevin](https://github.com/apotdevin).
+* [opt-add-teos](docker-compose-generator/docker-fragments/opt-add-teos.yml) for [The Eye Of Satoshi](https://github.com/talaia-labs/python-teos), a BOLT13 Lightning Watchtower. Use port 9814 on your server or Tor to connect.
 
 You can also create your own [custom fragments](#how-can-i-customize-the-generated-docker-compose-file).
 
 If you want to add an option to `BTCPAYGEN_ADDITIONAL_FRAGMENTS` and re-configure your install:
+
 ```bash
 export BTCPAYGEN_ADDITIONAL_FRAGMENTS="$BTCPAYGEN_ADDITIONAL_FRAGMENTS;opt-lnd-autopilot"
 . btcpay-setup.sh -i
@@ -173,7 +182,7 @@ For example, if you want `btc` and `ltc` support with `nginx` and `clightning` i
 
 Note: The first run might take a while, but following runs are instantaneous.
 
-On Windows (run in [powershell](https://docs.microsoft.com/en-us/powershell/scripting/setup/starting-windows-powershell?view=powershell-6)):
+On Windows (run in [powershell](https://docs.microsoft.com/en-us/powershell/scripting/windows-powershell/starting-windows-powershell)):
 
 ```powershell
 Invoke-Command {
@@ -288,6 +297,7 @@ BTCPAYGEN_DOCKER_IMAGE="btcpayserver/docker-compose-generator:local"
 ```
 
 Or on powershell:
+
 ```powershell
 cd docker-compose-generator
 $BTCPAYGEN_DOCKER_IMAGE="btcpayserver/docker-compose-generator:local"
@@ -307,35 +317,38 @@ We are trying to update our dependencies to run on `arm32v7` and `x64` boards. H
 | btcpayserver/docker-compose-generator | latest | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-docker/dcg-latest/docker-compose-generator/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-docker/dcg-latest/docker-compose-generator/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-docker/dcg-latest/docker-compose-generator/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/btcpayserver-docker) - [DockerHub](https://hub.docker.com/r/btcpayserver/docker-compose-generator) |
 | btcpayserver/docker-compose-builder | 1.24.1 | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-compose-builder/v1.24.1/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-compose-builder/v1.24.1/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-compose-builder/v1.24.1/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/docker-compose-builder) - [DockerHub](https://hub.docker.com/r/btcpayserver/docker-compose-builder) |
 | btcpayserver/bitcoin | 0.19.0.1 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Bitcoin/0.19.0.1/Bitcoin/0.19.0.1/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Bitcoin/0.19.0.1/Bitcoin/0.19.0.1/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Bitcoin/0.19.0.1/Bitcoin/0.19.0.1/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/bitcoin) |
-| btcpayserver/lightning | v0.8.0 | [✔️](https://raw.githubusercontent.com/btcpayserver/lightning/basedon-v0.8.0/Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lightning/basedon-v0.8.0/contrib/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lightning/basedon-v0.8.0/contrib/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/lightning) - [DockerHub](https://hub.docker.com/r/btcpayserver/lightning) |
-| shesek/lightning-charge | 0.4.11-standalone | [✔️](https://raw.githubusercontent.com/ElementsProject/lightning-charge/v0.4.11/Dockerfile) | [✔️](https://raw.githubusercontent.com/ElementsProject/lightning-charge/v0.4.11/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/ElementsProject/lightning-charge/v0.4.11/arm64v8.Dockerfile) | [Github](https://github.com/ElementsProject/lightning-charge) - [DockerHub](https://hub.docker.com/r/shesek/lightning-charge) |
+| btcpayserver/lightning | v0.9.0-1 | [✔️](https://raw.githubusercontent.com/btcpayserver/lightning/basedon-v0.9.0-1/Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lightning/basedon-v0.9.0-1/contrib/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lightning/basedon-v0.9.0-1/contrib/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/lightning) - [DockerHub](https://hub.docker.com/r/btcpayserver/lightning) |
+| shesek/lightning-charge | 0.4.19-standalone | [✔️](https://raw.githubusercontent.com/ElementsProject/lightning-charge/v0.4.19/Dockerfile) | [✔️](https://raw.githubusercontent.com/ElementsProject/lightning-charge/v0.4.19/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/ElementsProject/lightning-charge/v0.4.19/arm64v8.Dockerfile) | [Github](https://github.com/ElementsProject/lightning-charge) - [DockerHub](https://hub.docker.com/r/shesek/lightning-charge) |
 | shesek/spark-wallet | 0.2.9-standalone | [✔️](https://raw.githubusercontent.com/shesek/spark-wallet/v0.2.9/Dockerfile) | [✔️](https://raw.githubusercontent.com/shesek/spark-wallet/v0.2.9/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/shesek/spark-wallet/v0.2.9/arm64v8.Dockerfile) | [Github](https://github.com/shesek/spark-wallet) - [DockerHub](https://hub.docker.com/r/shesek/spark-wallet) |
-| saubyk/c-lightning-rest | 0.2.1 | [✔️](https://raw.githubusercontent.com/Ride-The-Lightning/c-lightning-REST/v0.2.1/amd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/Ride-The-Lightning/c-lightning-REST/v0.2.1/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/Ride-The-Lightning/c-lightning-REST/v0.2.1/arm64v8.Dockerfile) | [Github](https://github.com/Ride-The-Lightning/c-lightning-REST) - [DockerHub](https://hub.docker.com/r/saubyk/c-lightning-rest) |
-| shahanafarooqui/rtl | 0.6.3 | [✔️](https://raw.githubusercontent.com/ShahanaFarooqui/RTL/v0.6.3/Dockerfile) | [✔️](https://raw.githubusercontent.com/ShahanaFarooqui/RTL/v0.6.3/Dockerfile.arm32v7) | [✔️](https://raw.githubusercontent.com/ShahanaFarooqui/RTL/v0.6.3/Dockerfile.arm64v8) | [Github](https://github.com/ShahanaFarooqui/RTL) - [DockerHub](https://hub.docker.com/r/shahanafarooqui/rtl) |
-| btcpayserver/lnd | v0.8.2-beta | [✔️](https://raw.githubusercontent.com/btcpayserver/lnd/basedon-v0.8.2-beta/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lnd/basedon-v0.8.2-beta/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lnd/basedon-v0.8.2-beta/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/lnd) - [DockerHub](https://hub.docker.com/r/btcpayserver/lnd) |
-| btcpayserver/btcpayserver | 1.0.3.155 | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver/v1.0.3.155/amd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver/v1.0.3.155/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver/v1.0.3.155/arm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/btcpayserver) - [DockerHub](https://hub.docker.com/r/btcpayserver/btcpayserver) |
-| nicolasdorier/nbxplorer | 2.1.8 | [✔️](https://raw.githubusercontent.com/dgarage/nbxplorer/v2.1.8/Dockerfile.linuxamd64) | [✔️](https://raw.githubusercontent.com/dgarage/nbxplorer/v2.1.8/Dockerfile.linuxarm32v7) | [✔️](https://raw.githubusercontent.com/dgarage/nbxplorer/v2.1.8/Dockerfile.linuxarm64v8) | [Github](https://github.com/dgarage/nbxplorer) - [DockerHub](https://hub.docker.com/r/nicolasdorier/nbxplorer) |
+| saubyk/c-lightning-rest | 0.3.0 | [✔️](https://raw.githubusercontent.com/Ride-The-Lightning/c-lightning-REST/v0.3.0/amd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/Ride-The-Lightning/c-lightning-REST/v0.3.0/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/Ride-The-Lightning/c-lightning-REST/v0.3.0/arm64v8.Dockerfile) | [Github](https://github.com/Ride-The-Lightning/c-lightning-REST) - [DockerHub](https://hub.docker.com/r/saubyk/c-lightning-rest) |
+| shahanafarooqui/rtl | 0.8.4 | [✔️](https://raw.githubusercontent.com/ShahanaFarooqui/RTL/v0.8.4/Dockerfile) | [✔️](https://raw.githubusercontent.com/ShahanaFarooqui/RTL/v0.8.4/Dockerfile.arm32v7) | [✔️](https://raw.githubusercontent.com/ShahanaFarooqui/RTL/v0.8.4/Dockerfile.arm64v8) | [Github](https://github.com/ShahanaFarooqui/RTL) - [DockerHub](https://hub.docker.com/r/shahanafarooqui/rtl) |
+| btcpayserver/lnd | v0.10.2-beta | [✔️](https://raw.githubusercontent.com/btcpayserver/lnd/basedon-v0.10.2-beta/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lnd/basedon-v0.10.2-beta/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/lnd/basedon-v0.10.2-beta/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/lnd) - [DockerHub](https://hub.docker.com/r/btcpayserver/lnd) |
+| btcpayserver/btcpayserver | 1.0.5.5$<BTCPAY_BUILD_CONFIGURATION>? | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver/v1.0.5.5/amd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver/v1.0.5.5/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver/v1.0.5.5/arm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/btcpayserver) - [DockerHub](https://hub.docker.com/r/btcpayserver/btcpayserver) |
+| nicolasdorier/nbxplorer | 2.1.40 | [✔️](https://raw.githubusercontent.com/dgarage/nbxplorer/v2.1.40/Dockerfile.linuxamd64) | [✔️](https://raw.githubusercontent.com/dgarage/nbxplorer/v2.1.40/Dockerfile.linuxarm32v7) | [✔️](https://raw.githubusercontent.com/dgarage/nbxplorer/v2.1.40/Dockerfile.linuxarm64v8) | [Github](https://github.com/dgarage/nbxplorer) - [DockerHub](https://hub.docker.com/r/nicolasdorier/nbxplorer) |
 | nginx | 1.16.0 | [✔️](https://raw.githubusercontent.com/nginxinc/docker-nginx/1.16.0/stable/stretch/Dockerfile) | [✔️](https://raw.githubusercontent.com/nginxinc/docker-nginx/1.16.0/stable/stretch/Dockerfile) | [✔️](https://raw.githubusercontent.com/nginxinc/docker-nginx/1.16.0/stable/stretch/Dockerfile) | [Github](https://github.com/nginxinc/docker-nginx) - [DockerHub](https://hub.docker.com/_/nginx) |
 | btcpayserver/docker-gen | 0.7.7 | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-gen/v0.7.7/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-gen/v0.7.7/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-gen/v0.7.7/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/docker-gen) - [DockerHub](https://hub.docker.com/r/btcpayserver/docker-gen) |
 | btcpayserver/letsencrypt-nginx-proxy-companion | 1.12.2 | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-letsencrypt-nginx-proxy-companion/v1.12.2/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-letsencrypt-nginx-proxy-companion/v1.12.2/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-letsencrypt-nginx-proxy-companion/v1.12.2/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/docker-letsencrypt-nginx-proxy-companion) - [DockerHub](https://hub.docker.com/r/btcpayserver/letsencrypt-nginx-proxy-companion) |
-| btcpayserver/btctransmuter | 0.0.47 | [✔️](https://raw.githubusercontent.com/btcpayserver/btctransmuter/v0.0.47/BtcTransmuter/Dockerfile.linuxamd64) | [✔️](https://raw.githubusercontent.com/btcpayserver/btctransmuter/v0.0.47/BtcTransmuter/Dockerfile.linuxarm32v7) | ️❌ | [Github](https://github.com/btcpayserver/btctransmuter) - [DockerHub](https://hub.docker.com/r/btcpayserver/btctransmuter) |
-| btcpayserver/btcpayserver-configurator | 0.0.18 | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-configurator/v0.0.18/Dockerfiles/amd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-configurator/v0.0.18/Dockerfiles/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-configurator/v0.0.18/Dockerfiles/arm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/btcpayserver-configurator) - [DockerHub](https://hub.docker.com/r/btcpayserver/btcpayserver-configurator) |
-| btcpayserver/tor | 0.4.1.5 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Tor/0.4.1.5/Tor/0.4.1.5/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Tor/0.4.1.5/Tor/0.4.1.5/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Tor/0.4.1.5/Tor/0.4.1.5/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/tor) |
+| btcpayserver/btctransmuter | 0.0.55 | [✔️](https://raw.githubusercontent.com/btcpayserver/btctransmuter/v0.0.55/Dockerfiles/amd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btctransmuter/v0.0.55/Dockerfiles/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btctransmuter/v0.0.55/Dockerfiles/arm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/btctransmuter) - [DockerHub](https://hub.docker.com/r/btcpayserver/btctransmuter) |
+| btcpayserver/btcpayserver-configurator | 0.0.21 | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-configurator/v0.0.21/Dockerfiles/amd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-configurator/v0.0.21/Dockerfiles/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/btcpayserver-configurator/v0.0.21/Dockerfiles/arm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/btcpayserver-configurator) - [DockerHub](https://hub.docker.com/r/btcpayserver/btcpayserver-configurator) |
+| btcpayserver/eps | 0.2.0 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/EPS/0.2.0/EPS/0.2.0/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/EPS/0.2.0/EPS/0.2.0/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/EPS/0.2.0/EPS/0.2.0/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/eps) |
+| pihole/pihole | v5.0 | [✔️](https://raw.githubusercontent.com/pi-hole/docker-pi-hole/v5.0/Dockerfile_amd64) | [✔️](https://raw.githubusercontent.com/pi-hole/docker-pi-hole/v5.0/Dockerfile_armhf) | [✔️](https://raw.githubusercontent.com/pi-hole/docker-pi-hole/v5.0/Dockerfile_arm64) | [Github](https://github.com/pi-hole/docker-pi-hole) - [DockerHub](https://hub.docker.com/r/pihole/pihole) |
+| btcpayserver/tor | 0.4.2.7 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Tor/0.4.2.7/Tor/0.4.2.7/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Tor/0.4.2.7/Tor/0.4.2.7/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Tor/0.4.2.7/Tor/0.4.2.7/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/tor) |
 | postgres | 9.6.5 | [✔️](https://raw.githubusercontent.com/docker-library/postgres/b7cb3c6eacea93be2259381033be3cc435649369/9.6/Dockerfile) | [✔️](https://raw.githubusercontent.com/docker-library/postgres/b7cb3c6eacea93be2259381033be3cc435649369/9.6/Dockerfile) | [✔️](https://raw.githubusercontent.com/docker-library/postgres/b7cb3c6eacea93be2259381033be3cc435649369/9.6/Dockerfile) | [Github](https://github.com/docker-library/postgres) - [DockerHub](https://hub.docker.com/_/postgres) |
 | kamigawabul/docker-bitcoingold | 0.15.2 | [✔️](https://raw.githubusercontent.com/Vutov/docker-bitcoin/master/bitcoingold/0.15.2/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Vutov/docker-bitcoin) - [DockerHub](https://hub.docker.com/r/kamigawabul/docker-bitcoingold) |
 | kamigawabul/btglnd | latest | [✔️](https://raw.githubusercontent.com/vutov/lnd/master/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/vutov/lnd) - [DockerHub](https://hub.docker.com/r/kamigawabul/btglnd) |
-| acinq/eclair | btcpay | [✔️](https://raw.githubusercontent.com/ACINQ/eclair/btcpay/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/ACINQ/eclair) - [DockerHub](https://hub.docker.com/r/acinq/eclair) |
+| acinq/eclair | release-0.4.1 | [✔️](https://raw.githubusercontent.com/ACINQ/eclair/v0.4.1/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/ACINQ/eclair) - [DockerHub](https://hub.docker.com/r/acinq/eclair) |
 | chekaz/docker-bitcoinplus | 2.7.0 | [✔️](https://raw.githubusercontent.com/ChekaZ/docker/master/bitcoinplus/2.7.0/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/ChekaZ/docker) - [DockerHub](https://hub.docker.com/r/chekaz/docker-bitcoinplus) |
-| dalijolijo/docker-bitcore | 0.15.2 | [✔️](https://raw.githubusercontent.com/dalijolijo/btcpayserver-docker-bitcore/master/btx-debian/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/dalijolijo/btcpayserver-docker-bitcore) - [DockerHub](https://hub.docker.com/r/dalijolijo/docker-bitcore) |
+| dalijolijo/docker-bitcore | 0.15.2 | [✔️](https://raw.githubusercontent.com/dalijolijo/btcpayserver-docker-bitcore/master/docker-bitcored/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/dalijolijo/btcpayserver-docker-bitcore) - [DockerHub](https://hub.docker.com/r/dalijolijo/docker-bitcore) |
 | btcpayserver/dash | 0.14.0.1 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Dash/0.14.0.1/Dash/0.14.0.1/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Dash/0.14.0.1/Dash/0.14.0.1/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Dash/0.14.0.1/Dash/0.14.0.1/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/dash) |
 | rockstardev/dogecoin | 1.10.0 | [✔️](https://raw.githubusercontent.com/rockstardev/docker-bitcoin/feature/dogecoin/dogecoin/1.10.0/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/rockstardev/docker-bitcoin) - [DockerHub](https://hub.docker.com/r/rockstardev/dogecoin) |
 | chekaz/docker-feathercoin | 0.16.3 | [✔️](https://raw.githubusercontent.com/ChekaZ/docker/master/feathercoin/0.16.3/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/ChekaZ/docker) - [DockerHub](https://hub.docker.com/r/chekaz/docker-feathercoin) |
-| nicolasdorier/docker-groestlcoin | 2.17.2 | [✔️](https://raw.githubusercontent.com/NicolasDorier/docker-bitcoin/master/groestlcoin/2.17.2/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/NicolasDorier/docker-bitcoin) - [DockerHub](https://hub.docker.com/r/nicolasdorier/docker-groestlcoin) |
-| groestlcoin/lightning | v0.8.0 | [✔️](https://raw.githubusercontent.com/Groestlcoin/lightning/v0.8.0/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/lightning) - [DockerHub](https://hub.docker.com/r/groestlcoin/lightning) |
-| groestlcoin/groestlcoin-lightning-charge | version-0.4.11 | [✔️](https://raw.githubusercontent.com/Groestlcoin/groestlcoin-lightning-charge/v0.4.11/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/groestlcoin-lightning-charge) - [DockerHub](https://hub.docker.com/r/groestlcoin/groestlcoin-lightning-charge) |
-| groestlcoin/groestlcoin-spark | version-0.2.9 | [✔️](https://raw.githubusercontent.com/Groestlcoin/groestlcoin-spark/v0.2.9/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/groestlcoin-spark) - [DockerHub](https://hub.docker.com/r/groestlcoin/groestlcoin-spark) |
-| groestlcoin/lnd | v0.8.2-grs | [✔️](https://raw.githubusercontent.com/Groestlcoin/lnd/v0.8.2-grs/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/lnd) - [DockerHub](https://hub.docker.com/r/groestlcoin/lnd) |
-| btcpayserver/elements | 0.18.1.1-1 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Elements/0.18.1.1-1/Elements/0.18.1.1/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Elements/0.18.1.1-1/Elements/0.18.1.1/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Elements/0.18.1.1-1/Elements/0.18.1.1/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/elements) |
+| groestlcoin/docker-groestlcoin | 2.19.1 | [✔️](https://raw.githubusercontent.com/NicolasDorier/docker-bitcoin/master/groestlcoin/2.19.1/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/NicolasDorier/docker-bitcoin) - [DockerHub](https://hub.docker.com/r/groestlcoin/docker-groestlcoin) |
+| groestlcoin/lightning | v0.8.2 | [✔️](https://raw.githubusercontent.com/Groestlcoin/lightning/v0.8.2/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/lightning) - [DockerHub](https://hub.docker.com/r/groestlcoin/lightning) |
+| groestlcoin/groestlcoin-lightning-charge | version-0.4.19 | [✔️](https://raw.githubusercontent.com/Groestlcoin/groestlcoin-lightning-charge/v0.4.19/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/groestlcoin-lightning-charge) - [DockerHub](https://hub.docker.com/r/groestlcoin/groestlcoin-lightning-charge) |
+| groestlcoin/groestlcoin-spark | version-0.2.14 | [✔️](https://raw.githubusercontent.com/Groestlcoin/groestlcoin-spark/v0.2.14/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/groestlcoin-spark) - [DockerHub](https://hub.docker.com/r/groestlcoin/groestlcoin-spark) |
+| groestlcoin/eclair | v0.3.3 | [✔️](https://raw.githubusercontent.com/Groestlcoin/eclair/v0.3.3/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/eclair) - [DockerHub](https://hub.docker.com/r/groestlcoin/eclair) |
+| groestlcoin/lnd | v0.10.0-grs | [✔️](https://raw.githubusercontent.com/Groestlcoin/lnd/v0.10.0-grs/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Groestlcoin/lnd) - [DockerHub](https://hub.docker.com/r/groestlcoin/lnd) |
+| btcpayserver/elements | 0.18.1.7 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Elements/0.18.1.7/Elements/0.18.1.7/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Elements/0.18.1.7/Elements/0.18.1.7/linuxarm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Elements/0.18.1.7/Elements/0.18.1.7/linuxarm64v8.Dockerfile) | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/elements) |
 | btcpayserver/litecoin | 0.17.1-1 | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Litecoin/0.17.1-1/Litecoin/0.17.1/linuxamd64.Dockerfile) | [✔️](https://raw.githubusercontent.com/btcpayserver/dockerfile-deps/Litecoin/0.17.1-1/Litecoin/0.17.1/linuxarm32v7.Dockerfile) | ️❌ | [Github](https://github.com/btcpayserver/dockerfile-deps) - [DockerHub](https://hub.docker.com/r/btcpayserver/litecoin) |
 | wakiyamap/docker-monacoin | 0.17.1 | [✔️](https://raw.githubusercontent.com/wakiyamap/docker-bitcoin/master/monacoin/0.17.1/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/wakiyamap/docker-bitcoin) - [DockerHub](https://hub.docker.com/r/wakiyamap/docker-monacoin) |
 | kukks/monero | v0.15.0.0 | [✔️](https://raw.githubusercontent.com/Kukks/monero-docker/x86_64/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/Kukks/monero-docker) - [DockerHub](https://hub.docker.com/r/kukks/monero) |
@@ -344,6 +357,8 @@ We are trying to update our dependencies to run on `arm32v7` and `x64` boards. H
 | lukechilds/electrumx | latest | [✔️](https://raw.githubusercontent.com/lukechilds/docker-electrumx/master/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/lukechilds/docker-electrumx) - [DockerHub](https://hub.docker.com/r/lukechilds/electrumx) |
 | jvandrew/librepatron | 0.7.39 | [✔️](https://raw.githubusercontent.com/JeffVandrewJr/patron/v0.7.39/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/JeffVandrewJr/patron) - [DockerHub](https://hub.docker.com/r/jvandrew/librepatron) |
 | jvandrew/isso | atron.22 | [✔️](https://raw.githubusercontent.com/JeffVandrewJr/isso/patron.22/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/JeffVandrewJr/isso) - [DockerHub](https://hub.docker.com/r/jvandrew/isso) |
+| talaia/python-teos | latest | [✔️](https://raw.githubusercontent.com/talaia-labs/python-teos/master/docker/Dockerfile) | [✔️](https://raw.githubusercontent.com/talaia-labs/python-teos/master/docker/Dockerfile) | [✔️](https://raw.githubusercontent.com/talaia-labs/python-teos/master/docker/Dockerfile) | [Github](https://github.com/talaia-labs/python-teos) - [DockerHub](https://hub.docker.com/r/talaia/python-teos) |
+| apotdevin/thunderhub | v0.9.3 | [✔️](https://raw.githubusercontent.com/apotdevin/thunderhub/v0.9.3/Dockerfile) | [✔️](https://raw.githubusercontent.com/apotdevin/thunderhub/v0.9.3/arm32v7.Dockerfile) | [✔️](https://raw.githubusercontent.com/apotdevin/thunderhub/v0.9.3/arm64v8.Dockerfile) | [Github](https://github.com/apotdevin/thunderhub) - [DockerHub](https://hub.docker.com/r/apotdevin/thunderhub) |
 | btcpayserver/docker-woocommerce | 3.0.6-3 | [✔️](https://raw.githubusercontent.com/btcpayserver/docker-woocommerce/v3.0.6-3/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/btcpayserver/docker-woocommerce) - [DockerHub](https://hub.docker.com/r/btcpayserver/docker-woocommerce) |
 | mariadb | 10.3 | [✔️](https://raw.githubusercontent.com/docker-library/mariadb/master/10.3/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/docker-library/mariadb) - [DockerHub](https://hub.docker.com/_/mariadb) |
 | traefik | latest | [✔️](https://raw.githubusercontent.com/containous/traefik-library-image/master/scratch/Dockerfile) | ️❌ | ️❌ | [Github](https://github.com/containous/traefik-library-image) - [DockerHub](https://hub.docker.com/_/traefik) |
@@ -387,7 +402,7 @@ If you see this error:
 
 `Cannot create container for service docker: b'Mount denied:\nThe source path "\\\\var\\\\run\\\\docker.sock:/var/run/docker.sock"\nis not a valid Windows path'`.
 
-Run this in [powershell](https://docs.microsoft.com/en-us/powershell/scripting/setup/starting-windows-powershell?view=powershell-6):
+Run this in [powershell](https://docs.microsoft.com/en-us/powershell/scripting/windows-powershell/starting-windows-powershell):
 
 ```powershell
 $Env:COMPOSE_CONVERT_WINDOWS_PATHS=1
@@ -432,7 +447,7 @@ Modify the new `opt-save-storage.custom.yml` file to your taste:
 Then set it up:
 
 ```bash
-export BTCPAYGEN_ADDITIONAL_FRAGMENTS="opt-save-storage.custom"
+export BTCPAYGEN_ADDITIONAL_FRAGMENTS="$BTCPAYGEN_ADDITIONAL_FRAGMENTS;opt-save-storage.custom"
 . ./btcpay-setup.sh -i
 ```
 
@@ -442,10 +457,10 @@ You can change the ports for HTTP and HTTPS by setting the environment variables
 
 When you set `REVERSEPROXY_HTTP_PORT` to another value than 80, the built-in Let's Encrypt certificate will not work, as Let's Encrypt will try to validate your SSL certificate request by connecting from the internet to your domain on port 80. This validation request should be able to reach BTCPay Server in order to receive the certificate.
 
-If you need to run on a different port, it's best to terminate SSL using another web proxy and forward your traffic. 
+If you need to run on a different port, it's best to terminate SSL using another web proxy and forward your traffic.
 
-## Can I offload HTTPS termination? 
+## Can I offload HTTPS termination?
 
 Yes. To offload SSL termination, just forward the requests to the port specified by `REVERSEPROXY_HTTP_PORT` and make sure you are setting the header `X-Forwarded-Proto: https` so BTC Pay Server can know the original request was HTTPS. If you forget this extra header, BTCPay Server will work, but it will believe the connection is insecure and display a warning message.
 
-Because you are offloading HTTPS, you won't need the built-in Let's Encrypt anymore and can exclude `nginx-https` by adding it to `BTCPAYGEN_EXCLUDE_FRAGMENTS`.
+Yes. Please [see the documentation](https://docs.btcpayserver.org/FAQ/FAQ-Deployment/#can-i-use-an-existing-nginx-server-as-a-reverse-proxy-with-ssl-termination).

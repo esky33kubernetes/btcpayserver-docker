@@ -69,7 +69,7 @@ services:
 
   tor:
     restart: unless-stopped
-    image: btcpayserver/tor:0.4.1.5
+    image: btcpayserver/tor:0.4.2.7
     container_name: tor
     environment:
       TOR_PASSWORD: btcpayserver
@@ -153,6 +153,13 @@ services:
       HIDDENSERVICE_PORT: 50002
       HIDDENSERVICE_VIRTUAL_PORT: 50002
 
+  bitcoin_teos:
+    environment:
+      HIDDENSERVICE_NAME: teos
+      HIDDENSERVICE_PORT: 9814
+    volumes:
+      - "tor_servicesdir:/var/lib/tor/hidden_services"
+      - "tor_torrcdir:/usr/local/etc/tor/"
 volumes:
     tor_datadir:
     tor_torrcdir:

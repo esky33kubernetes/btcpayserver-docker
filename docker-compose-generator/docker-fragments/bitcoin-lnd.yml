@@ -2,7 +2,7 @@ version: "3"
 
 services:
   lnd_bitcoin:
-    image: btcpayserver/lnd:v0.8.2-beta
+    image: btcpayserver/lnd:v0.10.2-beta
     container_name: btcpayserver_lnd_bitcoin
     restart: unless-stopped
     environment:
@@ -26,6 +26,7 @@ services:
         invoicemacaroonpath=/data/invoice.macaroon
         readonlymacaroonpath=/data/readonly.macaroon
         notls=1
+        tlsextradomain=lnd_bitcoin
     ports:
       - "9735:9735"
     expose:
@@ -39,7 +40,7 @@ services:
       - bitcoind
 
   bitcoin_rtl:
-    image: shahanafarooqui/rtl:0.5.4
+    image: shahanafarooqui/rtl:0.8.4
     restart: unless-stopped
     environment:
       LND_SERVER_URL: http://lnd_bitcoin:8080/v1
@@ -56,6 +57,8 @@ services:
       - "lnd_bitcoin_rtl_datadir:/data"
     expose:
       - "3000"
+    links:
+      - lnd_bitcoin
 
   btcpayserver:
     environment:
@@ -73,17 +76,12 @@ services:
   bitcoind:
     environment:
       BITCOIN_EXTRA_ARGS: |
-        zmqpubrawblock=tcp://0.0.0.0:28332
-        zmqpubrawtx=tcp://0.0.0.0:28333
         # rpcuser=lnd
         # rpcpassword=afixedpasswordbecauselndsuckswithcookiefile
         # We need to use rpcauth because we also need cookieauth. rpcpassword disabled cookie file auth.
         # Be careful if you copy the line below from the docker-compose.yml! A dollar sign is escaped.
         rpcauth=lnd:d031f7567c5b02ba95524170e51c77f4$$827ce5412f653d6613c2f480e521eb437c866b999bdeb2ee4f9c41d3b00dff1c
-    expose:
-      - "28332"
-      - "28333"
-  
+
   nginx:
     links:
       - "lnd_bitcoin"
@@ -98,3 +96,6 @@ services:
 volumes:
   lnd_bitcoin_datadir:
   lnd_bitcoin_rtl_datadir:
+
+required:
+  - "opt-add-zmq"
