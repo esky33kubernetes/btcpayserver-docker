@@ -82,7 +82,9 @@ exit
 * Add BTCPay utilities in /usr/bin
 * Start BTCPay
 
-You can read [the article](https://medium.com/@BtcpayServer/hosting-btcpay-server-for-cheap-2b27761fdb9d) for step by step instructions.
+Video below guides you step by step on how to set up BTCPay Server on a VPS with Docker.
+
+[![](https://img.youtube.com/vi/x6hqTFgHqhA/hqdefault.jpg)](https://www.youtube.com/watch?v=x6hqTFgHqhA)
 
 Check out this video if you're interested in learning more about setting up [BTCPay with Docker Compose](https://www.youtube.com/playlist?list=PLH4m2oS2ratfaprAFx9E3ZDjwxNKvCk4e).
 
