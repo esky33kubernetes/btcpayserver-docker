@@ -16,4 +16,4 @@ services:
       - "nbxplorer_datadir:/datadir"
 
 volumes:
-    nbxplorer_datadir:
+  nbxplorer_datadir:

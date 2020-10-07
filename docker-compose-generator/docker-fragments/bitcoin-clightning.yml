@@ -50,7 +50,7 @@ services:
     links:
       - clightning_bitcoin
     expose:
-     - "9737"
+      - "9737"
 
   clightning_bitcoin_rest:
     image: saubyk/c-lightning-rest:0.3.0
