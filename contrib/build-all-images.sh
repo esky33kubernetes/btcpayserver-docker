@@ -341,7 +341,7 @@ git clone https://github.com/Groestlcoin/eclair eclair
 cd eclair
 git checkout v0.3.3
 cd "$(dirname $DOCKERFILE)"
-docker build -f "$DOCKERFILE" -t "groestlcoin/groestlcoin-spark:version-0.2.9" .
+docker build -f "$DOCKERFILE" -t "groestlcoin/eclair:v0.3.3" .
 cd - && cd ..
 
 
@@ -458,12 +458,12 @@ cd - && cd ..
 # Build monero
 # https://raw.githubusercontent.com/Kukks/monero-docker/x86_64/Dockerfile
 DOCKERFILE="Dockerfile"
-echo "Building kukks/monero:v0.15.0.0"
+echo "Building btcpayserver/monero:0.15.0.1-amd64"
 git clone https://github.com/Kukks/monero-docker monero
 cd monero
 git checkout x86_64
 cd "$(dirname $DOCKERFILE)"
-docker build -f "$DOCKERFILE" -t "kukks/monero:v0.15.0.0" .
+docker build -f "$DOCKERFILE" -t "btcpayserver/monero:0.15.0.1-amd64" .
 cd - && cd ..
 
 
@@ -599,7 +599,7 @@ git clone https://github.com/btcpayserver/dockerfile-deps eps
 cd eps
 git checkout EPS/0.2.0
 cd "$(dirname $DOCKERFILE)"
-docker build -f "$DOCKERFILE" -t "btcpayserver/btcpayserver-configurator:0.0.18" .
+docker build -f "$DOCKERFILE" -t "btcpayserver/eps:0.2.0" .
 cd - && cd ..
 
 
@@ -825,3 +825,4 @@ git checkout master
 cd "$(dirname $DOCKERFILE)"
 docker build -f "$DOCKERFILE" -t "romanornr/docker-viacoin:0.15.2" .
 cd - && cd ..
+
