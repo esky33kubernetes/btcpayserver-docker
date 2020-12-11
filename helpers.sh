@@ -18,6 +18,8 @@ install_tooling() {
                 "btcpayserver_trezarcoind" "trezarcoin-cli.sh" "Command line for your Trezar instance" \
                 "btcpayserver_viacoind" "viacoin-cli.sh" "Command line for your Viacoin instance" \
                 "btcpayserver_elementsd" "elements-cli.sh" "Command line for your Elements/Liquid instance" \
+                "ndlci_cli" "ndlc-cli.sh" "Command line for NDLC-CLI" \
+                "pihole" "pihole.sh" "Command line for running pihole commands" \
                 "*" "btcpay-clean.sh" "Command line for deleting old unused docker images" \
                 "*" "btcpay-down.sh" "Command line for stopping all services related to BTCPay Server" \
                 "*" "btcpay-restart.sh" "Command line for restarting all services related to BTCPay Server" \
@@ -51,9 +53,9 @@ install_tooling() {
 btcpay_expand_variables() {
     BTCPAY_CRYPTOS=""
     for i in "$BTCPAYGEN_CRYPTO1" "$BTCPAYGEN_CRYPTO2" "$BTCPAYGEN_CRYPTO3" "$BTCPAYGEN_CRYPTO4" "$BTCPAYGEN_CRYPTO5" "$BTCPAYGEN_CRYPTO5" "$BTCPAYGEN_CRYPTO6" "$BTCPAYGEN_CRYPTO7" "$BTCPAYGEN_CRYPTO8"
-    do  
-        if [ ! -z "$i" ]; then 
-            if [ ! -z "$BTCPAY_CRYPTOS" ]; then 
+    do
+        if [ ! -z "$i" ]; then
+            if [ ! -z "$BTCPAY_CRYPTOS" ]; then
                 BTCPAY_CRYPTOS="$BTCPAY_CRYPTOS;"
             fi
             BTCPAY_CRYPTOS="$BTCPAY_CRYPTOS$i"
