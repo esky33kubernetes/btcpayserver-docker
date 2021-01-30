@@ -109,7 +109,7 @@ services:
 
   tor-gen:
     restart: unless-stopped
-    image: btcpayserver/docker-gen:0.7.7
+    image: btcpayserver/docker-gen:0.7.8
     container_name: tor-gen
     volumes:
       - "/var/run/docker.sock:/tmp/docker.sock:ro"
@@ -153,6 +153,12 @@ services:
       HIDDENSERVICE_PORT: 50002
       HIDDENSERVICE_VIRTUAL_PORT: 50002
 
+  bwt:
+    environment:
+      HIDDENSERVICE_NAME: bwt-electrum
+      HIDDENSERVICE_PORT: 50001
+      HIDDENSERVICE_VIRTUAL_PORT: 50001
+
   bitcoin_teos:
     environment:
       HIDDENSERVICE_NAME: teos
@@ -160,6 +166,18 @@ services:
     volumes:
       - "tor_servicesdir:/var/lib/tor/hidden_services"
       - "tor_torrcdir:/usr/local/etc/tor/"
+
+  zammad-nginx:
+    environment:
+      HIDDENSERVICE_NAME: zammad
+      HIDDENSERVICE_PORT: 80
+    volumes:
+      - "tor_servicesdir:/var/lib/tor/hidden_services"
+      - "tor_torrcdir:/usr/local/etc/tor/"
+
+  bitcoin_thub:
+    environment:
+      TOR_PROXY_SERVER: socks://tor:9050
 volumes:
   tor_datadir:
   tor_torrcdir:
