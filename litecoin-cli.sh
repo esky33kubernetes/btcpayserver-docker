@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker exec btcpayserver_litecoind litecoin-cli -datadir="/data" "$@"
+docker exec -ti btcpayserver_litecoind litecoin-cli -datadir="/data" "$@"

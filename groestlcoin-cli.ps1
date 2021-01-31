@@ -1,1 +1,1 @@
-docker exec btcpayserver_groestlcoind groestlcoin-cli -datadir="/data" $args
+docker exec -ti btcpayserver_groestlcoind groestlcoin-cli -datadir="/data" $args

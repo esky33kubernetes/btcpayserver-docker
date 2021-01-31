@@ -38,8 +38,8 @@
     "Crypto": "grs",
     "CryptoFragment": "groestlcoin",
     "CLightningFragment": "groestlcoin-clightning",
-    "LNDFragment": "groestlcoin-lnd",
-    "EclairFragment": "groestlcoin-eclair"
+    "LNDFragment": null,
+    "EclairFragment": null
   },
   {
     "Crypto": "via",
@@ -79,6 +79,13 @@
   {
     "Crypto": "lbtc",
     "CryptoFragment": "liquid",
+    "CLightningFragment": null,
+    "LNDFragment": null,
+    "EclairFragment": null
+  },
+  {
+    "Crypto": "eth",
+    "CryptoFragment": "ethereum",
     "CLightningFragment": null,
     "LNDFragment": null,
     "EclairFragment": null

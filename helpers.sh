@@ -18,6 +18,7 @@ install_tooling() {
                 "btcpayserver_trezarcoind" "trezarcoin-cli.sh" "Command line for your Trezar instance" \
                 "btcpayserver_viacoind" "viacoin-cli.sh" "Command line for your Viacoin instance" \
                 "btcpayserver_elementsd" "elements-cli.sh" "Command line for your Elements/Liquid instance" \
+                "ndlci_cli" "ndlc-cli.sh" "Command line for NDLC-CLI" \
                 "pihole" "pihole.sh" "Command line for running pihole commands" \
                 "*" "btcpay-clean.sh" "Command line for deleting old unused docker images" \
                 "*" "btcpay-down.sh" "Command line for stopping all services related to BTCPay Server" \
@@ -52,9 +53,9 @@ install_tooling() {
 btcpay_expand_variables() {
     BTCPAY_CRYPTOS=""
     for i in "$BTCPAYGEN_CRYPTO1" "$BTCPAYGEN_CRYPTO2" "$BTCPAYGEN_CRYPTO3" "$BTCPAYGEN_CRYPTO4" "$BTCPAYGEN_CRYPTO5" "$BTCPAYGEN_CRYPTO5" "$BTCPAYGEN_CRYPTO6" "$BTCPAYGEN_CRYPTO7" "$BTCPAYGEN_CRYPTO8"
-    do  
-        if [ ! -z "$i" ]; then 
-            if [ ! -z "$BTCPAY_CRYPTOS" ]; then 
+    do
+        if [ ! -z "$i" ]; then
+            if [ ! -z "$BTCPAY_CRYPTOS" ]; then
                 BTCPAY_CRYPTOS="$BTCPAY_CRYPTOS;"
             fi
             BTCPAY_CRYPTOS="$BTCPAY_CRYPTOS$i"
@@ -97,12 +98,14 @@ BTCPAY_SSHKEYFILE=$BTCPAY_SSHKEYFILE
 BTCPAY_SSHAUTHORIZEDKEYS=$BTCPAY_SSHAUTHORIZEDKEYS
 BTCPAY_HOST_SSHAUTHORIZEDKEYS=$BTCPAY_HOST_SSHAUTHORIZEDKEYS
 LIBREPATRON_HOST=$LIBREPATRON_HOST
+ZAMMAD_HOST=$ZAMMAD_HOST
 BTCTRANSMUTER_HOST=$BTCTRANSMUTER_HOST
 BTCPAY_CRYPTOS=$BTCPAY_CRYPTOS
 WOOCOMMERCE_HOST=$WOOCOMMERCE_HOST
 TOR_RELAY_NICKNAME=$TOR_RELAY_NICKNAME
 TOR_RELAY_EMAIL=$TOR_RELAY_EMAIL
 EPS_XPUB=$EPS_XPUB" > $BTCPAY_ENV_FILE
+env | grep ^BWT_ >> $BTCPAY_ENV_FILE
 }
 
 btcpay_up() {
@@ -142,5 +145,17 @@ btcpay_restart() {
     if ! [ $? -eq 0 ]; then
         docker-compose -f $BTCPAY_DOCKER_COMPOSE restart
     fi
+    popd > /dev/null
+}
+
+btcpay_dump_db() {
+    pushd . > /dev/null
+    cd "$(dirname "$BTCPAY_ENV_FILE")"
+    backup_dir="/var/lib/docker/volumes/backup_datadir/_data"
+    if [ ! -d "$backup_dir" ]; then
+        docker volume create backup_datadir
+    fi
+    local filename=${1:-"postgres-$(date "+%Y%m%d-%H%M%S").sql"}
+    docker exec $(docker ps -a -q -f "name=postgres_1") pg_dumpall -c -U postgres > "$backup_dir/$filename"
     popd > /dev/null
 }

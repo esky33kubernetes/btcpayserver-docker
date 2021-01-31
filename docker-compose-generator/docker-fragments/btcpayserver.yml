@@ -4,7 +4,7 @@ services:
 
   btcpayserver:
     restart: unless-stopped
-    image: ${BTCPAY_IMAGE:-esky33kubernetes/junglelab:1.0.5.5$<altcoins>?}
+    image: ${BTCPAY_IMAGE:-esky33kubernetes/junglelab:1.0.5.8$<BTCPAY_BUILD_CONFIGURATION>?}
     expose:
       - "49392"
     environment:
@@ -18,12 +18,14 @@ services:
       BTCPAY_SSHKEYFILE: ${BTCPAY_SSHKEYFILE}
       BTCPAY_SSHAUTHORIZEDKEYS: ${BTCPAY_SSHAUTHORIZEDKEYS}
       BTCPAY_DEBUGLOG: btcpay.log
+      BTCPAY_UPDATEURL: https://api.github.com/repos/btcpayserver/btcpayserver/releases/latest
+      BTCPAY_DOCKERDEPLOYMENT: "true"
     links:
       - postgres
     volumes:
-     - "btcpay_datadir:/datadir"
-     - "nbxplorer_datadir:/root/.nbxplorer"
-     - "$<BTCPAY_HOST_SSHAUTHORIZEDKEYS>?:${BTCPAY_SSHAUTHORIZEDKEYS}"
+      - "btcpay_datadir:/datadir"
+      - "nbxplorer_datadir:/root/.nbxplorer"
+      - "$<BTCPAY_HOST_SSHAUTHORIZEDKEYS>?:${BTCPAY_SSHAUTHORIZEDKEYS}"
 
 volumes:
   btcpay_datadir:
