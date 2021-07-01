@@ -4,7 +4,7 @@ services:
 
   btcpayserver:
     restart: unless-stopped
-    image: ${BTCPAY_IMAGE:-esky33kubernetes/btcpayliquid:1.0.7.2-altcoins$<BTCPAY_BUILD_CONFIGURATION>?}
+    image: ${BTCPAY_IMAGE:-esky33kubernetes/btcpayliquid:1.1.2$<BTCPAY_BUILD_CONFIGURATION>?}
     expose:
       - "49392"
     environment:

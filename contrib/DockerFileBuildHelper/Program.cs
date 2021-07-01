@@ -375,6 +375,17 @@ namespace DockerFileBuildHelper
                     dockerInfo.SupportedByUs = true;
                     break;
                 }
+                case "bitcointaprootcc/0.21.0-bip8-lottrue":
+                {
+                    var tagNoRevision = image.Tag.Split('-').First();
+                    dockerInfo.DockerFilePath = $"bitcointaprootcc/0.21.0-bip8-lottrue/linuxamd64.Dockerfile";
+                    dockerInfo.DockerFilePathARM32v7 = $"bitcointaprootcc/0.21.0-bip8-lottrue/linuxarm32v7.Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = $"bitcointaprootcc/0.21.0-bip8-lottrue/linuxarm64v8.Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/btcpayserver/dockerfile-deps";
+                    dockerInfo.GitRef = $"bitcointaprootcc/0.21.0-bip8-lottrue";
+                    dockerInfo.SupportedByUs = true;
+                    break;
+                }
                 case "elements":
                 {
                     var tagNoRevision = image.Tag.Split('-').First();
@@ -593,6 +604,19 @@ namespace DockerFileBuildHelper
                     dockerInfo.DockerFilePathARM64v8 = $"docker/arm64v8.Dockerfile";
                     dockerInfo.GitLink = "https://github.com/bwt-dev/bwt";
                     dockerInfo.GitRef = $"v{image.Tag.Split('-')[0]}";
+                    break;
+                case "sphinx-relay":
+                    dockerInfo.DockerFilePath = $"Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = $"Dockerfile";
+                    dockerInfo.DockerFilePathARM64v8 = $"Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/stakwork/sphinx-relay";
+                    dockerInfo.GitRef = $"{image.Tag}";
+                    break;
+                case "lndhub":
+                    dockerInfo.DockerFilePath = $"Dockerfile";
+                    dockerInfo.DockerFilePathARM32v7 = $"Dockerfile";
+                    dockerInfo.GitLink = "https://github.com/BlueWallet/LndHub";
+                    dockerInfo.GitRef = $"{image.Tag.Split("@")[0]}";
                     break;
                 default:
                     if (firstTry)
